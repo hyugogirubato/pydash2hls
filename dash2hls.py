@@ -1,7 +1,7 @@
 """"
 Project: DashToHLS
 File: dash2hls.py
-Date: 2022.03.25
+Date: 2022.03.26
 """
 
 import html
@@ -245,3 +245,11 @@ class Converter:
         file = open(output, 'w', encoding='utf-8')
         file.write(hls)
         file.close()
+
+    def get_url_list(self, source, bandwidth):
+        hls = self.get_hls(source, bandwidth)
+        url_list = list()
+        for line in hls.split('\n'):
+            if line.startswith('http'):
+                url_list.append(line)
+        return url_list
