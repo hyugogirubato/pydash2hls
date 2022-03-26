@@ -1,4 +1,4 @@
-# DashToHLS [![Total Downloads](https://img.shields.io/github/downloads/hyugogirubato/dash2hls/total.svg?style=plastic)](https://github.com/hyugogirubato/dash2hls/releases)
+# DashToHLS [![Release](https://img.shields.io/github/release-date/hyugogirubato/dash2hls?style=plastic)](https://github.com/hyugogirubato/dash2hls/releases) ![Total Downloads](https://img.shields.io/github/downloads/hyugogirubato/dash2hls/total.svg?style=plastic)
 
 You can now convert all of your dash files to HLS format so that you can use them more easily.
 
@@ -8,7 +8,7 @@ You can now convert all of your dash files to HLS format so that you can use the
 * Convert dash file to HLS file
 * Convert dash file to source url list
 
-## Download Anime Downloader [Windows]
+## DashToHLS [Windows]
 > Note : Currently only windows executable is provided (Linux, Mac users go to [Build from source](#Building-from-source))
 
 Download the [Latest Release](https://github.com/hyugogirubato/dash2hls/releases) from here and extract the zip file
@@ -24,7 +24,7 @@ If you're running from source files, execute the "main.py" script
 python3 ./main.py
 ```
 
-## How to convert using dash2hls (CLI)?
+## How to convert using DashToHLS (CLI)?
 
 First, you need to familiarize yourself with the commands you can use the dash to HLS converter.
 
@@ -63,7 +63,6 @@ print(mdp.get_url_list(selected[0], selected[1]))
 # Audio
 selected = [mdp.json_manifest[media_audio], bandwidth_audio]
 mdp.save_hls(selected[0], selected[1])
-print(mdp.get_url_list(selected[0], selected[1]))
 ```
 
 ## Building from source
