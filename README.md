@@ -7,7 +7,7 @@ You can now convert all of your dash files to HLS format so that you can use the
 * Convert a dash file to JSON format
 * Convert dash file to HLS file
 
-## Download Anime Downloader [Windows]
+## DashToHLS [Windows]
 > Note : Currently only windows executable is provided (Linux, Mac users go to [Build from source](#Building-from-source))
 
 Download the [Latest Release](https://github.com/hyugogirubato/dash2hls/releases) from here and extract the zip file
