@@ -23,7 +23,7 @@ If you're running from source files, execute the "main.py" script
 python3 ./main.py
 ```
 
-## How to convert using dash2hls (CLI)?
+## How to convert using DashToHLS (CLI)?
 
 First, you need to familiarize yourself with the commands you can use the dash to HLS converter.
 
