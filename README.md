@@ -36,7 +36,7 @@ Commands List :
   -m, --media           Index of selected media.
   -b, --bandwidth       Choice of quality among the selected media.
   -p, --path            Custom save path of HLS file.
-  -o, --output          Number of parrallel downloads. Will download sequencially if not provided
+  -o, --output          Output file name (without extension).
 ```
 Above mentioned are the arguments you need to use to convert dash source to HLS.
 
@@ -101,7 +101,7 @@ optional arguments:
   -m, --media           Index of selected media.
   -b, --bandwidth       Choice of quality among the selected media.
   -p, --path            Custom save path of HLS file.
-  -o, --output          Number of parrallel downloads. Will download sequencially if not provided
+  -o, --output          Output file name (without extension).
 ```
 ## Examples
 Display the list of media available for a dash file
