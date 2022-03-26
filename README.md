@@ -1,4 +1,4 @@
-# DashToHLS [![Total Downloads](https://img.shields.io/github/downloads/hyugogirubato/dash2hls/total.svg?style=plastic)](https://github.com/hyugogirubato/dash2hls/releases)
+# DashToHLS [![Total Downloads](https://img.shields.io/github/release-date/hyugogirubato/dash2hls?label=Release&style=plastic)](https://github.com/hyugogirubato/dash2hls/releases)
 
 You can now convert all of your dash files to HLS format so that you can use them more easily.
 
