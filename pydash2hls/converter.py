@@ -161,7 +161,7 @@ class Converter:
 
     def build_hls(self, profile_id: str) -> str:
         profile = self._get_profile(profile_id)
-
+        """
         if profile['fragments'][0]['media'].startswith('https://v.vrv.co/'):
             # HLS: VRV.co master m3u8
             hls = ['#EXTM3U']
@@ -183,15 +183,17 @@ class Converter:
                 hls.append(f'#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH={video["bandwidth"]},RESOLUTION={video["width"]}x{video["height"]},FRAME-RATE={video["frameRate"]},CODECS="{video["codecs"]},{audio["codecs"]}"')
                 hls.append(f"{host}_{files[i]}/index-v1-a1.m3u8?{cloudflare}")
         else:
-            # HLS: index m3u8
-            hls = ['#EXTM3U', '#EXT-X-TARGETDURATION:4', '#EXT-X-ALLOW-CACHE:YES', '#EXT-X-PLAYLIST-TYPE:VOD']
-            if 'licenseUrl' in profile['drm']:
-                hls.append(f'#EXT-X-KEY:METHOD=SAMPLE-AES,URI="{profile["drm"]["license"]}"')
-            hls += ['#EXT-X-VERSION:5', '#EXT-X-MEDIA-SEQUENCE:1']
-            for fragment in profile['fragments']:
-                hls.append(f"#EXTINF:{fragment['extinf']},")
-                hls.append(fragment['media'])
-            hls.append('#EXT-X-ENDLIST')
+        """
+
+        # HLS: index m3u8
+        hls = ['#EXTM3U', '#EXT-X-TARGETDURATION:4', '#EXT-X-ALLOW-CACHE:YES', '#EXT-X-PLAYLIST-TYPE:VOD']
+        if 'licenseUrl' in profile['drm']:
+            hls.append(f'#EXT-X-KEY:METHOD=SAMPLE-AES,URI="{profile["drm"]["license"]}"')
+        hls += ['#EXT-X-VERSION:5', '#EXT-X-MEDIA-SEQUENCE:1']
+        for fragment in profile['fragments']:
+            hls.append(f"#EXTINF:{fragment['extinf']},")
+            hls.append(fragment['media'])
+        hls.append('#EXT-X-ENDLIST')
         return '\n'.join(hls)
 
     def media_urls(self, profile_id: str) -> list:
