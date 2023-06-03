@@ -1,30 +1,30 @@
-"""Setup module"""
-
-from setuptools import setup
-
-with open('README.md', 'r') as fh:
-    LONG_DESCRIPTION = fh.read()
+from setuptools import setup, find_packages
 
 setup(
-    name='pydash2hls',
-    version='2.0.1',
-    description='Python library to convert DASH file to HLS.',
-    long_description=LONG_DESCRIPTION,
-    long_description_content_type='text/markdown',
-    url='https://github.com/hyugogirubato/pydash2hls',
-    author='hyugogirubato',
-    author_email='hyugogirubato@gmail.com',
-    license='GNU GPLv3',
-    packages=['pydash2hls'],
-    install_requires=['requests', 'xmltodict'],
+    name="pydash2hls",
+    version="2.1.0",
+    author="hyugogirubato",
+    author_email="hyugogirubato@gmail.com",
+    description="Python library for converting DASH manifest files to HLS format.",
+    long_description=open("README.md").read(),
+    long_description_content_type="text/markdown",
+    url="https://github.com/hyugogirubato/pydash2hls",
+    packages=find_packages(),
+    license="GPL-3.0-only",
+    keywords=["manifest", "hls", "m3u8", "dash"],
     classifiers=[
-        'Environment :: Console',
-        'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
-        'Operating System :: OS Independent',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
-        'Topic :: Utilities'
-    ]
+        "Development Status :: 5 - Production/Stable",
+        "Intended Audience :: Developers",
+        "Intended Audience :: End Users/Desktop",
+        "Natural Language :: English",
+        "Operating System :: OS Independent",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Topic :: Utilities"
+    ],
+    install_requires=["requests", "xmltodict"],
+    python_requires=">=3.7"
 )

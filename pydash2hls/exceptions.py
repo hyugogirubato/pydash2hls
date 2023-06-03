@@ -3,16 +3,16 @@ class PyDash2HLSException(Exception):
 
 
 class InvalidPath(PyDash2HLSException):
-    """File path is invalid."""
+    """Invalid file path."""
 
 
 class InvalidFileContent(PyDash2HLSException):
-    """Contents of the file is not a DASH file or is incompatible."""
+    """The contents of the file are not in DASH format or are incompatible."""
 
 
 class InvalidProfile(PyDash2HLSException):
-    """Selected profile is invalid."""
+    """The selected profile is invalid."""
 
 
 class MissingRemoteUrl(PyDash2HLSException):
-    """Remote file url is required."""
+    """Remote file URL is missing."""
