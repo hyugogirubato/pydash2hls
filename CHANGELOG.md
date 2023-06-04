@@ -48,7 +48,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Initial release.
 
-[2.1.0]: https://github.com/hyugogirubato/pybinance/releases/tag/v2.1.1
-[2.1.0]: https://github.com/hyugogirubato/pybinance/releases/tag/v2.1.0
-[2.0.1]: https://github.com/hyugogirubato/pybinance/releases/tag/v2.0.1
-[1.0.0]: https://github.com/hyugogirubato/pybinance/releases/tag/v1.0.0
+[2.1.0]: https://github.com/hyugogirubato/pydash2hls/releases/tag/v2.1.1
+[2.1.0]: https://github.com/hyugogirubato/pydash2hls/releases/tag/v2.1.0
+[2.0.1]: https://github.com/hyugogirubato/pydash2hls/releases/tag/v2.0.1
+[1.0.0]: https://github.com/hyugogirubato/pydash2hls/releases/tag/v1.0.0
