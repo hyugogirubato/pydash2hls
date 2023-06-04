@@ -1,6 +1,6 @@
 # PyDash2HLS
 
-[![License](https://img.shields.io/github/license/hyugogirubato/pydash2hls)](https://github.com/hyugogirubato/pydash2hls/blob/master/LICENSE)
+[![License](https://img.shields.io/github/license/hyugogirubato/pydash2hls)](https://github.com/hyugogirubato/pydash2hls/blob/main/LICENSE)
 [![Release](https://img.shields.io/github/release-date/hyugogirubato/pydash2hls)](https://github.com/hyugogirubato/pydash2hls/releases)
 [![Latest Version](https://img.shields.io/pypi/v/pydash2hls)](https://pypi.org/project/pydash2hls/)
 
@@ -80,5 +80,5 @@ The following exceptions can be raised by PyDash2HLS:
 
 ### License
 
-This project is licensed under the [GPL v3 License](https://github.com/hyugogirubato/pydash2hls/blob/master/LICENSE).
+This project is licensed under the [GPL v3 License](https://github.com/hyugogirubato/pydash2hls/blob/main/LICENSE).
 
