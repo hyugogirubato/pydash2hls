@@ -81,4 +81,3 @@ The following exceptions can be raised by PyDash2HLS:
 ### License
 
 This project is licensed under the [GPL v3 License](https://github.com/hyugogirubato/pydash2hls/blob/main/LICENSE).
-
