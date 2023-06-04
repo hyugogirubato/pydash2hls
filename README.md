@@ -7,6 +7,13 @@
 PyDash2HLS is a Python library for converting DASH (Dynamic Adaptive Streaming over HTTP) manifest files to HLS (HTTP
 Live Streaming) format.
 
+## Features
+
+- Convert MPD files to HLS format
+- Support for remote and local MPD files
+- Retrieve media URLs for a specific profile
+- Handle DRM (Digital Rights Management) information in MPD files
+
 ## Installation
 
 You can install PyDash2HLS using pip:
@@ -73,5 +80,5 @@ The following exceptions can be raised by PyDash2HLS:
 
 ### License
 
-This project is licensed under the [GPL v3 License](LICENSE).
+This project is licensed under the [GPL v3 License](https://github.com/hyugogirubato/pydash2hls/blob/master/LICENSE).
 
