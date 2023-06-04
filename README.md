@@ -1,6 +1,6 @@
 # PyDash2HLS
 
-[![License](https://img.shields.io/github/license/hyugogirubato/PyDash2HLS)](https://github.com/hyugogirubato/PyDash2HLS/blob/master/LICENSE)
+[![License](https://img.shields.io/github/license/hyugogirubato/pydash2hls)](https://github.com/hyugogirubato/pydash2hls/blob/master/LICENSE)
 [![Release](https://img.shields.io/github/release-date/hyugogirubato/pydash2hls)](https://github.com/hyugogirubato/pydash2hls/releases)
 [![Latest Version](https://img.shields.io/pypi/v/pydash2hls)](https://pypi.org/project/pydash2hls/)
 
