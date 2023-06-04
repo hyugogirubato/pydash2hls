@@ -14,7 +14,7 @@ class Converter:
         self.mdp_srt = mdp_srt
         self.mdp_dict = mdp_dict
         self.mdp_url = url
-        self.profile = self._manifest_profile()
+        self.profiles = self._manifest_profiles()
 
     @classmethod
     def from_remote(cls, url: str, **kwargs) -> Converter:
@@ -43,12 +43,12 @@ class Converter:
         return representation.get(key, adaptation.get(key, None))
 
     def _get_profile(self, profile_id: str) -> dict:
-        for profile in self.profile:
+        for profile in self.profiles:
             if profile["id"] == profile_id:
                 return profile
         raise InvalidProfile(f"Profile does not exist: {profile_id}")
 
-    def _manifest_profile(self) -> list:
+    def _manifest_profiles(self) -> list:
         source = None if self.mdp_url is None else "/".join(self.mdp_url.split("/")[:-1])
         profiles = []
 
@@ -69,8 +69,7 @@ class Converter:
 
             if isinstance(adaptation["Representation"], list):
                 for representation in adaptation["Representation"]:
-                    mime_type = self._get_key(adaptation, representation, "@mimeType") or (
-                        "video/mp4" if "avc" in representation["@codecs"] else "audio/m4a")
+                    mime_type = self._get_key(adaptation, representation, "@mimeType") or ("video/mp4" if "avc" in representation["@codecs"] else "audio/m4a")
                     start_with_sap = self._get_key(adaptation, representation, "@startWithSAP") or "1"
                     profile = {
                         "id": representation["@id"],
