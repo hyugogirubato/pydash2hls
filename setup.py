@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="pydash2hls",
-    version="2.1.1",
+    version="2.1.2",
     author="hyugogirubato",
     author_email="hyugogirubato@gmail.com",
     description="Python library for converting DASH manifest files to HLS format.",
