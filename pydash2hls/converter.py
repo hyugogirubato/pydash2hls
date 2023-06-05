@@ -8,6 +8,23 @@ import xmltodict
 from pydash2hls.exceptions import InvalidFileContent, InvalidPath, InvalidProfile, MissingRemoteUrl
 
 
+def _get_drm(adaptation: dict) -> dict:
+    drm = {}
+    for protection in adaptation.get("ContentProtection", []):
+        keys = {
+            "kid": "@cenc:default_KID",
+            "widevine": "cenc:pssh",
+            "playready": "mspr:pro",
+            "license": "ms:laurl"
+        }
+
+        for key, value in keys.items():
+            if value in protection:
+                item = protection[value]
+                drm[key] = item if isinstance(item, str) else item["#text"]
+    return drm
+
+
 class Converter:
 
     def __init__(self, mdp_srt: str, mdp_dict: dict, url: str = None):
@@ -53,20 +70,6 @@ class Converter:
         profiles = []
 
         for adaptation in self.mdp_dict["MPD"]["Period"]["AdaptationSet"]:
-            drm = {}
-            if "ContentProtection" in adaptation:
-                for protection in adaptation["ContentProtection"]:
-                    keys = {
-                        "kid": "@cenc:default_KID",
-                        "widevine": "cenc:pssh",
-                        "playready": "mspr:pro",
-                        "license": "ms:laurl"
-                    }
-
-                    for key, value in keys.items():
-                        if value in protection:
-                            drm[key] = protection[value]
-
             if isinstance(adaptation["Representation"], list):
                 for representation in adaptation["Representation"]:
                     mime_type = self._get_key(adaptation, representation, "@mimeType") or ("video/mp4" if "avc" in representation["@codecs"] else "audio/m4a")
@@ -88,24 +91,30 @@ class Converter:
                         profile["frameRate"] = round(int(frame_rate.split("/")[0]) / int(frame_rate.split("/")[1]), 3)
                         profile["sar"] = representation.get("@sar", "1:1")
 
+                    drm = _get_drm(adaptation)
+                    item = adaptation.get("SegmentTemplate")
+                    if not item:
+                        item = representation.get("SegmentTemplate")
+                        drm = _get_drm(representation)
+
                     fragments = []
-                    if "SegmentTemplate" in adaptation:
+                    if item:
                         position = 0
-                        number = int(adaptation["SegmentTemplate"].get("@startNumber", 1)) - 1
-                        timescale = int(adaptation["SegmentTemplate"]["@timescale"])
-                        timelines = adaptation["SegmentTemplate"]["SegmentTimeline"]["S"]
+                        number = int(item.get("@startNumber", 1)) - 1
+                        timescale = int(item["@timescale"])
+                        timelines = item["SegmentTimeline"]["S"]
                         for timeline in timelines:
                             for _ in range(int(timeline.get("@r", 1))):
                                 number += 1
                                 extinf = int(timelines[position]["@d"]) / timescale
-                                media = adaptation["SegmentTemplate"]["@media"]
+                                media = item["@media"]
                                 if not media.startswith("http"):
                                     if source is None:
                                         raise MissingRemoteUrl("Remote manifest URL required.")
                                     media = f"{source}/{media}"
 
                                 media = media.replace("$Number$", str(number))
-                                time = timelines[position].get("@t", 0) + int(timelines[position]["@d"])
+                                time = int(timelines[position].get("@t", 0)) + int(timelines[position]["@d"])
                                 media = media.replace("$Time$", str(time))
                                 media = media.replace("$RepresentationID$", profile["id"])
                                 media = media.replace("$Bandwidth$", str(profile["bandwidth"]))
@@ -117,6 +126,7 @@ class Converter:
                                 })
                             position += 1
                     else:
+                        drm = _get_drm(adaptation)
                         segment = representation["SegmentBase"]["@indexRange"]
                         start, end = map(int, segment.split("-"))
                         extinf = (end - start) / 1000
