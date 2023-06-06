@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import base64
 from pathlib import Path
+from typing import Optional
 
 import requests
 import xmltodict
@@ -31,7 +33,8 @@ class Converter:
         self.mdp_srt = mdp_srt
         self.mdp_dict = mdp_dict
         self.mdp_url = url
-        self.profiles = self._manifest_profiles()
+        self.profiles = []
+        self._manifest_profiles()
 
     @classmethod
     def from_remote(cls, url: str, **kwargs) -> Converter:
@@ -65,15 +68,32 @@ class Converter:
                 return profile
         raise InvalidProfile(f"Profile does not exist: {profile_id}")
 
-    def _manifest_profiles(self) -> list:
-        source = None if self.mdp_url is None else "/".join(self.mdp_url.split("/")[:-1])
-        profiles = []
+    def _existing_profile(self, profile_id: str) -> Optional[int]:
+        for i, profile in enumerate(self.profiles):
+            if profile["id"] == profile_id:
+                return i
+        return None
 
-        for adaptation in self.mdp_dict["MPD"]["Period"]["AdaptationSet"]:
-            if isinstance(adaptation["Representation"], list):
-                for representation in adaptation["Representation"]:
+    def _manifest_profiles(self) -> None:
+        source = self.mdp_url
+
+        # Period
+        periods = self.mdp_dict["MPD"]["Period"]
+        periods = periods if isinstance(periods, list) else [periods]
+
+        for i, period in enumerate(periods):
+            for adaptation in period["AdaptationSet"]:
+
+                # Representations
+                representations = adaptation["Representation"]
+                representations = representations if isinstance(representations, list) else [representations]
+
+                for representation in representations:
                     mime_type = self._get_key(adaptation, representation, "@mimeType") or ("video/mp4" if "avc" in representation["@codecs"] else "audio/m4a")
                     start_with_sap = self._get_key(adaptation, representation, "@startWithSAP") or "1"
+                    if "video" not in mime_type and "audio" not in mime_type:
+                        continue
+
                     profile = {
                         "id": representation["@id"],
                         "mimeType": mime_type,
@@ -91,26 +111,64 @@ class Converter:
                         profile["frameRate"] = round(int(frame_rate.split("/")[0]) / int(frame_rate.split("/")[1]), 3)
                         profile["sar"] = representation.get("@sar", "1:1")
 
+                    # DRM
                     drm = _get_drm(adaptation)
                     item = adaptation.get("SegmentTemplate")
                     if not item:
                         item = representation.get("SegmentTemplate")
                         drm = _get_drm(representation)
 
-                    fragments = []
+                    index = self._existing_profile(profile["id"])
+                    fragments = [] if index is None else self.profiles[index]["fragments"]
                     if item:
                         position = 0
                         number = int(item.get("@startNumber", 1)) - 1
                         timescale = int(item["@timescale"])
+
+                        # Initialization
+                        if len(fragments) == 0 and "@initialization" in item:
+                            media = item["@initialization"]
+                            media = media.replace("$RepresentationID$", profile["id"])
+                            media = media.replace("$Bandwidth$", str(profile["bandwidth"]))
+                            if not media.startswith("http"):
+                                if "BaseURL" in representation:
+                                    base_url = representation["BaseURL"]
+                                    base_url = base_url if isinstance(base_url, list) else [base_url]
+                                    source = base_url[0]
+
+                                if source is None:
+                                    raise MissingRemoteUrl("Remote manifest URL required.")
+
+                                if source.endswith("/"):
+                                    source = source[:-1]
+                                media = f"{source}/{media}"
+                            fragments.append({
+                                "range": "0-",
+                                "extinf": f"{timescale / 1000:.3f}",
+                                "media": media
+                            })
+
+                        # Timelines
                         timelines = item["SegmentTimeline"]["S"]
+                        timelines = timelines if type(timelines) is list else [timelines]
+
                         for timeline in timelines:
-                            for _ in range(int(timeline.get("@r", 1))):
+                            for _ in range(int(timeline.get("@r", 0)) + 1):
                                 number += 1
                                 extinf = int(timelines[position]["@d"]) / timescale
                                 media = item["@media"]
+
                                 if not media.startswith("http"):
+                                    if "BaseURL" in representation:
+                                        base_url = representation["BaseURL"]
+                                        base_url = base_url if isinstance(base_url, list) else [base_url]
+                                        source = base_url[0]
+
                                     if source is None:
                                         raise MissingRemoteUrl("Remote manifest URL required.")
+
+                                    if source.endswith("/"):
+                                        source = source[:-1]
                                     media = f"{source}/{media}"
 
                                 media = media.replace("$Number$", str(number))
@@ -118,7 +176,6 @@ class Converter:
                                 media = media.replace("$Time$", str(time))
                                 media = media.replace("$RepresentationID$", profile["id"])
                                 media = media.replace("$Bandwidth$", str(profile["bandwidth"]))
-
                                 fragments.append({
                                     "range": "0-",
                                     "extinf": f"{extinf:.3f}",
@@ -127,29 +184,53 @@ class Converter:
                             position += 1
                     else:
                         drm = _get_drm(adaptation)
-                        segment = representation["SegmentBase"]["@indexRange"]
-                        start, end = map(int, segment.split("-"))
+                        segment = representation["SegmentBase"]
+                        start, end = map(int, segment["@indexRange"].split("-"))
+                        if "Initialization" in segment:
+                            start, _ = map(int, segment["Initialization"]["@range"].split("-"))
+
                         extinf = (end - start) / 1000
                         fragments.append({
-                            "range": segment,
+                            "range": f"{start}-{end}",
                             "extinf": f"{extinf:.3f}",
                             "media": f"{source}/{representation['BaseURL']}"
                         })
 
                     profile["fragments"] = fragments
                     profile["drm"] = drm
-                    profiles.append(profile)
-            else:
-                pass
-        return profiles
 
-    def build_hls(self, profile_id: str) -> str:
+                    index = self._existing_profile(profile["id"])
+                    if index is None:
+                        self.profiles.append(profile)
+                    else:
+                        if not self.profiles[index]["drm"]:
+                            self.profiles[index]["drm"] = profile["drm"]
+                        self.profiles[index]["fragments"] = profile["fragments"]
+
+    def build_hls(self, profile_id: str, licence: str = None) -> str:
         profile = self._get_profile(profile_id)
-        hls = ["#EXTM3U", "#EXT-X-TARGETDURATION:4", "#EXT-X-ALLOW-CACHE:YES", "#EXT-X-PLAYLIST-TYPE:VOD"]
-        licence = profile["drm"].get("license")
+        sequence = 0 if len(profile["fragments"]) == 1 else 1
+        duration = int(max([float(f["extinf"]) for f in profile["fragments"]]))
+        hls = [
+            "#EXTM3U",
+            "#EXT-X-VERSION:6",
+            f"#EXT-X-MEDIA-SEQUENCE:{sequence}",
+            f"#EXT-X-TARGETDURATION:{duration}",
+            "#EXT-X-PLAYLIST-TYPE:VOD"
+            "#EXT-X-ALLOW-CACHE:YES",
+        ]
+
         if licence:
-            hls.append(f'#EXT-X-KEY:METHOD=SAMPLE-AES,URI="{licence}"')
-        hls += ["#EXT-X-VERSION:5", "#EXT-X-MEDIA-SEQUENCE:1"]
+            kid, key = licence.split(":")
+            key_uri = "data:text/plain;base64," + base64.b64encode(bytes.fromhex(key)).decode("utf-8")
+            key_id = "0x" + bytes.fromhex(kid).hex().upper()
+            key_iv = "0x00000000000000000000000000000000"
+            hls.append(f'#EXT-X-KEY:METHOD=SAMPLE-AES-CTR,URI="{key_uri}",KEYID={key_id},IV={key_iv},KEYFORMATVERSIONS="1",KEYFORMAT="urn:uuid:edef8ba9-79d6-4ace-a3c8-27dcd51d21ed"')
+        else:
+            licence = profile["drm"].get("license")
+            if licence:
+                hls.append(f'#EXT-X-KEY:METHOD=SAMPLE-AES,URI="{licence}"')
+
         hls.extend(f"#EXTINF:{fragment['extinf']},\n{fragment['media']}" for fragment in profile["fragments"])
         hls.append("#EXT-X-ENDLIST")
         return "\n".join(hls)
