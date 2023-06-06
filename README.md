@@ -9,10 +9,10 @@ Live Streaming) format.
 
 ## Features
 
-- Convert MPD files to HLS format
-- Support for remote and local MPD files
-- Retrieve media URLs for a specific profile
-- Handle DRM (Digital Rights Management) information in MPD files
+- Convert MPD files to HLS format.
+- Support for remote and local MPD files.
+- Retrieve media URLs for a specific profile.
+- Handle DRM (Digital Rights Management) information in MPD files.
 
 ## Installation
 
