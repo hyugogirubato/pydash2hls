@@ -75,7 +75,7 @@ class Converter:
         return None
 
     def _manifest_profiles(self) -> None:
-        source = self.mdp_url
+        source = None if self.mdp_url is None else "/".join(self.mdp_url.split("/")[:-1])
 
         # Period
         periods = self.mdp_dict["MPD"]["Period"]
@@ -216,7 +216,7 @@ class Converter:
             "#EXT-X-VERSION:6",
             f"#EXT-X-MEDIA-SEQUENCE:{sequence}",
             f"#EXT-X-TARGETDURATION:{duration}",
-            "#EXT-X-PLAYLIST-TYPE:VOD"
+            "#EXT-X-PLAYLIST-TYPE:VOD",
             "#EXT-X-ALLOW-CACHE:YES",
         ]
 
