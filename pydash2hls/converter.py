@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import base64
+import re
+from collections import Counter
 from pathlib import Path
 from typing import Optional
 
@@ -22,8 +24,15 @@ def _get_drm(adaptation: dict) -> dict:
 
         for key, value in keys.items():
             if value in protection:
+                scheme_id = re.sub(r'[^0-9a-f]', "", protection.get("@schemeIdUri", "").replace("urn:uuid:", "").lower())
+                if scheme_id == "edef8ba979d64acea3c827dcd51d21ed":
+                    key = "widevine"
+                elif scheme_id == "9a04f07998404286ab92e65be0885f95":
+                    key = "playready"
+
                 item = protection[value]
-                drm[key] = item if isinstance(item, str) else item["#text"]
+                item = item if isinstance(item, str) else item["#text"]
+                drm[key] = item.lower() if key == "kid" else item
     return drm
 
 
@@ -90,15 +99,15 @@ class Converter:
 
                 for representation in representations:
                     mime_type = self._get_key(adaptation, representation, "@mimeType") or ("video/mp4" if "avc" in representation["@codecs"] else "audio/m4a")
-                    start_with_sap = self._get_key(adaptation, representation, "@startWithSAP") or "1"
+                    start_with_sap = (self._get_key(adaptation, representation, "@startWithSAP") or "1") == "1"
                     if "video" not in mime_type and "audio" not in mime_type:
                         continue
 
                     profile = {
-                        "id": representation["@id"],
+                        "id": representation.get("@id") or adaptation.get("@id"),
                         "mimeType": mime_type,
-                        "codecs": representation["@codecs"],
-                        "bandwidth": int(representation["@bandwidth"]),
+                        "codecs": representation.get("@codecs") or adaptation.get("@codecs"),
+                        "bandwidth": int(representation.get("@bandwidth") or adaptation.get("@bandwidth")),
                         "startWithSAP": start_with_sap
                     }
                     if "audio" in profile["mimeType"] or "@audioSamplingRate" in representation:
@@ -210,12 +219,12 @@ class Converter:
     def build_hls(self, profile_id: str, licence: str = None) -> str:
         profile = self._get_profile(profile_id)
         sequence = 0 if len(profile["fragments"]) == 1 else 1
-        duration = int(max([float(f["extinf"]) for f in profile["fragments"]]))
+        duration, _ = Counter([float(f["extinf"]) for f in profile["fragments"]]).most_common(1)[0]
         hls = [
             "#EXTM3U",
             "#EXT-X-VERSION:6",
             f"#EXT-X-MEDIA-SEQUENCE:{sequence}",
-            f"#EXT-X-TARGETDURATION:{duration}",
+            f"#EXT-X-TARGETDURATION:{int(duration)}",
             "#EXT-X-PLAYLIST-TYPE:VOD",
             "#EXT-X-ALLOW-CACHE:YES",
         ]
